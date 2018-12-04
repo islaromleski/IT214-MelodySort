@@ -1,19 +1,28 @@
 /*
-  Melody
+  Based off "ToneMelody", an example code in the public domain.
+  The base was created 21 Jan 2010 by Tom Igoe and last modified 30 Aug 2011.
 
-  Plays a melody
-
-  circuit:
-  - 8 ohm speaker on digital pin 8
-
-  created 21 Jan 2010
-  modified 30 Aug 2011
-  by Tom Igoe
-
-  This example code is in the public domain.
-
+  A link to it on the Arduino website has been provided:
   http://www.arduino.cc/en/Tutorial/Tone
+
+  This modified program generates a random
+  
+  This project also uses the "OneWire" and "Arduino Temperature Control" libraries
+  to pull input from the temperatue sensor (on pin D2) to use as a seed for RNG.
 */
+
+// Libraries for the temperature sensor.
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
+// Data wire is connected to the Arduino digital pin 2.
+#define ONE_WIRE_BUS 2
+
+// Setup a oneWire instance to communicate with any OneWire devices.
+OneWire oneWire(ONE_WIRE_BUS);
+
+// Pass our oneWire reference to Dallas Temperature sensor.
+DallasTemperature sensors(&oneWire);
 
 // Function that sorts an array by finding the lowest value & moving it to the bottom.
 // It then increments so that it won't ever check the bottom value. It takes n^2 cycles to complete.
@@ -45,6 +54,20 @@ void swap(int *x, int *y)
 }
 
 void setup() {
+  
+  // Start serial communication.
+  Serial.begin(9600);
+  // Start up the library for our temperature sensor.
+  sensors.begin();
+  
+  // Call sensors.requestTemperatures() to poll the current value of the sensor.
+  sensors.requestTemperatures();
+  
+  // Set the seed for random() using the value of the temperature in Fahrenheit.
+  // If the sensor is not plugged in it will read a value of -196.6 degrees.
+  // ByIndex(0) is used because we're using the first IC on the line.
+  randomSeed(sensors.getTempFByIndex(0));
+  
   // Declare the variables.
   int limit = random(5, 10);
   int melody[limit];
